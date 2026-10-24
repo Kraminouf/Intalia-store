@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INTALIA STORE</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f7f5f0;color:#222}
+header{background:#111;color:#d8b66a;text-align:center;padding:24px 12px}
+header h1{margin:0;font-size:30px;letter-spacing:4px}
+header p{color:white;margin-bottom:0}
+nav{background:#222;padding:12px;text-align:center}
+nav a{color:#fff;text-decoration:none;margin:0 10px;font-size:14px}
+.hero{text-align:center;padding:30px 15px;background:#e9dfca}
+.hero h2{color:#332710;margin:0 0 10px}
+.hero p{margin:8px}
+.container{max-width:1100px;margin:auto;padding:20px}
+h2.section-title{text-align:center;color:#8c6b2f;margin:25px 0}
+.search{width:100%;padding:13px;border:1px solid #ccc;border-radius:8px;font-size:16px;margin-bottom:15px}
+.categories{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0 25px}
+.categories button{border:1px solid #b89956;background:white;padding:10px 13px;border-radius:20px;cursor:pointer}
+.categories button.active,.categories button:hover{background:#b89956;color:#fff}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.card{background:white;border-radius:12px;padding:15px;text-align:center;box-shadow:0 2px 10px #0000000c}
+.product-icon{font-size:55px;background:#f5f0e5;padding:20px;border-radius:10px}
+.card h3{font-size:17px;min-height:38px}
+.card p{color:#777;font-size:13px}
+.price{font-weight:bold;font-size:20px;color:#9b762e}
+.card button,.gold-btn{background:#b28b40;color:white;border:0;padding:12px 15px;border-radius:7px;cursor:pointer;width:100%;font-size:15px}
+.card button:hover,.gold-btn:hover{background:#8e6b2b}
+.panel{background:white;border-radius:12px;padding:20px;margin-top:25px;box-shadow:0 2px 10px #0000000c}
+.cart-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #eee;padding:10px 0}
+.cart-row button{padding:5px 10px;cursor:pointer}
+input,textarea,select{width:100%;padding:12px;margin:7px 0 13px;border:1px solid #ccc;border-radius:7px;font-size:15px}
+label{font-weight:bold;font-size:14px}
+.total{font-size:21px;font-weight:bold;text-align:right;margin:18px 0}
+.empty{text-align:center;color:#777;padding:15px}
+footer{background:#111;color:white;text-align:center;padding:25px;margin-top:30px}
+footer span{color:#d8b66a}
+.small{font-size:12px;color:#777;line-height:1.5}
+</style>
+</head>
+<body>
+
+<header>
+<h1>INTALIA STORE</h1>
+<p>Votre bien-être, notre priorité</p>
+</header>
+
+<nav>
+<a href="#accueil">Accueil</a>
+<a href="#boutique">Boutique</a>
+<a href="#panier">Panier (<span id="cart-count">0</span>)</a>
+</nav>
+
+<section class="hero" id="accueil">
+<h2>Bienvenue chez INTALIA STORE</h2>
+<p>Découvrez notre sélection de produits bien-être et beauté.</p>
+<p><strong>Simple • Pratique • Commande par WhatsApp</strong></p>
+</section>
+
+<main class="container" id="boutique">
+<h2 class="section-title">Notre boutique</h2>
+
+<input id="search" class="search" type="search"
+placeholder="🔎 Rechercher un produit..."
+oninput="renderProducts()">
+
+<div class="categories" id="categories"></div>
+<div class="products" id="products"></div>
+
+<section class="panel" id="panier">
+<h2>🛒 Mon panier</h2>
+<div id="cart-items"><p class="empty">Votre panier est vide.</p></div>
+<div class="total">Total : <span id="total">0</span> DH</div>
+<button class="gold-btn" onclick="goToCheckout()">Passer la commande</button>
+</section>
+
+<section class="panel" id="checkout">
+<h2>📦 Informations de livraison</h2>
+<p>Remplissez vos informations pour envoyer votre commande par WhatsApp.</p>
+
+<form id="order-form">
+<label for="customer">Nom complet *</label>
+<input id="customer" required placeholder="Votre nom complet">
+
+<label for="phone">Téléphone *</label>
+<input id="phone" type="tel" required placeholder="Votre numéro de téléphone">
+
+<label for="city">Ville *</label>
+<input id="city" required placeholder="Ex. Casablanca">
+
+<label for="address">Adresse de livraison *</label>
+<textarea id="address" required rows="3" placeholder="Quartier, rue, numéro..."></textarea>
+
+<label for="note">Remarque (facultatif)</label>
+<textarea id="note" rows="2" placeholder="Informations complémentaires"></textarea>
+
+<button class="gold-btn" type="submit">Envoyer la commande sur WhatsApp</button>
+</form>
+<p class="small">Les prix et la disponibilité doivent être confirmés avant la validation finale de la commande.</p>
+</section>
+</main>
+
+<footer>
+<h3><span>INTALIA STORE</span></h3>
+<p>Merci pour votre confiance ❤️</p>
+<p>Commandes et renseignements par WhatsApp</p>
+</footer>
+
+<script>
+const WHATSAPP_NUMBER = "212641584588";
+
+const categories = [
+"Tous",
+"Augmentation de poids",
+"Perte de poids",
+"Cheveux et ongles",
+"Soin de la peau",
+"Éclaircissement",
+"Articulations et os",
+"Douleurs et nerfs",
+"Énergie et vitalité"
+];
+
+/*
+EXEMPLES DE DÉMONSTRATION :
+Remplacez ces produits par vos vrais produits,
+avec leurs prix exacts et leurs informations vérifiées.
+*/
+const products = [
+{id:1,name:"Produit bien-être",category:"Augmentation de poids",price:120,icon:"🌿",description:"Produit à présenter : ajoutez sa description vérifiée."},
+{id:2,name:"Produit minceur",category:"Perte de poids",price:150,icon:"🍃",description:"Produit à présenter : ajoutez sa description vérifiée."},
+{id:3,name:"Soin cheveux",category:"Cheveux et ongles",price:95,icon:"💆",description:"Produit à présenter : ajoutez sa description vérifiée."},
+{id:4,name:"Soin de la peau",category:"Soin de la peau",price:110,icon:"🧴",description:"Produit à présenter : ajoutez sa description vérifiée."},
+{id:5,name:"Soin éclat",category:"Éclaircissement",price:100,icon:"✨",description:"Produit à présenter : ajoutez sa description vérifiée."},
+{id:6,name:"Soin articulations",category:"Articulations et os",price:130,icon:"🌱",description:"Produit à présenter : ajoutez sa description vérifiée."},
+{id:7,name:"Bien-être quotidien",category:"Douleurs et nerfs",price:125,icon:"🌼",description:"Produit à présenter : ajoutez sa description vérifiée."},
+{id:8,name:"Énergie quotidienne",category:"Énergie et vitalité",price:90,icon:"⚡",description:"Produit à présenter : ajoutez sa description vérifiée."}
+];
+
+let selectedCategory = "Tous";
+let cart = {};
+
+function renderCategories(){
+  document.getElementById("categories").innerHTML = categories.map(c =>
+    `<button class="${c===selectedCategory?'active':''}" onclick="selectCategory(${JSON.stringify(c)})">${c}</button>`
+  ).join("");
+}
+
+function selectCategory(category){
+  selectedCategory = category;
+  renderCategories();
+  renderProducts();
+}
+
+function renderProducts(){
+  const search = document.getElementById("search").value.toLowerCase().trim();
+  const filtered = products.filter(p =>
+    (selectedCategory==="Tous" || p.category===selectedCategory) &&
+    (p.name.toLowerCase().includes(search) || p.category.toLowerCase().includes(search))
+  );
+
+  const target = document.getElementById("products");
+  if(!filtered.length){
+    target.innerHTML = '<p class="empty">Aucun produit trouvé.</p>';
+    return;
+  }
+
+  target.innerHTML = filtered.map(p => `
+    <article class="card">
+      <div class="product-icon">${p.icon}</div>
+      <h3>${p.name}</h3>
+      <p>${p.category}</p>
+      <p>${p.description}</p>
+      <div class="price">${p.price} DH</div>
+      <br>
+      <button onclick="addToCart(${p.id})">Ajouter au panier</button>
+    </article>
+  `).join("");
+}
+
+function addToCart(id){
+  cart[id] = (cart[id] || 0) + 1;
+  renderCart();
+}
+
+function changeQuantity(id, amount){
+  cart[id] = (cart[id] || 0) + amount;
+  if(cart[id] <= 0) delete cart[id];
+  renderCart();
+}
+
+function renderCart(){
+  const ids = Object.keys(cart);
+  const count = ids.reduce((sum,id)=>sum+cart[id],0);
+  const total = ids.reduce((sum,id)=>{
+    const p = products.find(x=>x.id===Number(id));
+    return sum + p.price * cart[id];
+  },0);
+
+  document.getElementById("cart-count").textContent = count;
+  document.getElementById("total").textContent = total;
+
+  if(!ids.length){
+    document.getElementById("cart-items").innerHTML =
+      '<p class="empty">Votre panier est vide.</p>';
+    return;
+  }
+
+  document.getElementById("cart-items").innerHTML = ids.map(id=>{
+    const p = products.find(x=>x.id===Number(id));
+    return `<div class="cart-row">
+      <div><strong>${p.name}</strong><br>${p.price} DH × ${cart[id]}</div>
+      <div>
+        <button type="button" onclick="changeQuantity(${p.id},-1)">−</button>
+        ${cart[id]}
+        <button type="button" onclick="changeQuantity(${p.id},1)">+</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function goToCheckout(){
+  if(!Object.keys(cart).length){
+    alert("Ajoutez au moins un produit au panier.");
+    return;
+  }
+  document.getElementById("checkout").scrollIntoView({behavior:"smooth"});
+}
+
+document.getElementById("order-form").addEventListener("submit",function(e){
+  e.preventDefault();
+
+  const ids = Object.keys(cart);
+  if(!ids.length){
+    alert("Votre panier est vide. Ajoutez un produit avant de commander.");
+    document.getElementById("panier").scrollIntoView({behavior:"smooth"});
+    return;
+  }
+
+  const customer = document.getElementById("customer").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const city = document.getElementById("city").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const note = document.getElementById("note").value.trim();
+
+  let total = 0;
+  let message = "Bonjour INTALIA STORE, je souhaite passer une commande :%0A%0A";
+  message += "Nom : " + encodeURIComponent(customer) + "%0A";
+  message += "Téléphone : " + encodeURIComponent(phone) + "%0A";
+  message += "Ville : " + encodeURIComponent(city) + "%0A";
+  message += "Adresse : " + encodeURIComponent(address) + "%0A%0A";
+  message += "Produits :%0A";
+
+  ids.forEach(id=>{
+    const p = products.find(x=>x.id===Number(id));
+    const subtotal = p.price * cart[id];
+    total += subtotal;
+    message += "- " + encodeURIComponent(p.name) + " x" + cart[id] +
+      " = " + subtotal + " DH%0A";
+  });
+
+  message += "%0ATotal produits : " + total + " DH";
+  message += "%0AFrais de livraison : à confirmer";
+  if(note) message += "%0ARemarque : " + encodeURIComponent(note);
+  message += "%0A%0AMerci de confirmer la disponibilité et le total final.";
+
+  window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + message,"_blank");
+});
+
+renderCategories();
+renderProducts();
+renderCart();
+</script>
+
+</body>
+  </html>
